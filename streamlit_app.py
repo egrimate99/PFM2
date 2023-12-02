@@ -38,20 +38,22 @@ def simulate_stock_path_risk_neutral_fixed_wiener(k, m, sigma, r, S0, wiener_inc
     return t, S
 
 # Function to generate multiple stock price paths for a given parameter set
-def generate_multiple_paths(k, m, sigma, S0, r, T, N, num_paths, wiener_increments_all_paths):
-    paths_a = []
+def generate_multiple_paths(k, m, sigma, S0, r, T, N, num_paths, wiener_increments_all_paths, risk_neutral=False):
+    paths = []
 #paths_b = []
 
     for path_idx in range(num_paths):
         # Simulate path for (a) part
-        t, S = simulate_stock_path_fixed_wiener(k, m, sigma, S0, wiener_increments_all_paths[path_idx], T, N)
-        paths_a.append(S)
+        if not risk_neutral:
+            t, S = simulate_stock_path_fixed_wiener(k, m, sigma, S0, wiener_increments_all_paths[path_idx], T, N)
+            paths.append(S)
 
         # Simulate path for (b) part
-        #t, S_rn = simulate_stock_path_risk_neutral_fixed_wiener(k, m, sigma, r, S0, wiener_increments_all_paths[path_idx], T, N)
-       #paths_b.append(S_rn)
+        if risk_neutral:
+            t, S_rn = simulate_stock_path_risk_neutral_fixed_wiener(k, m, sigma, r, S0, wiener_increments_all_paths[path_idx], T, N)
+            paths.append(S_rn)
 
-    return t, paths_a, #paths_b
+    return t, paths #paths_b
 
 # Set random seed for reproducibility
 np.random.seed(42)
@@ -101,7 +103,7 @@ chart_a = alt.Chart(df_paths_a_long).mark_line().encode(
     y=alt.Y('price:Q', title='Stock Price', scale=alt.Scale(domain=[50, 300])),
     color='path:N',
     tooltip=['index', 'price']
-).interactive(bind_y =True).properties(width=600, height=500)  # Increased width for better visibility
+).properties(width=600, height=500)  # Increased width for better visibility
 
 
 
@@ -117,7 +119,7 @@ $$ c^2 = a^2 + b^2 $$
 k_ = st.slider('Select the mean-reversion parameter k_', min_value=0.01, max_value=10.0, value=0.1, step=0.01)
 m_ = st.slider('Select the mean-reversion parameter m_', min_value=0.01, max_value=200.0, value=100.0, step=0.01)
 sigma_ = st.slider('Select the mean-reversion parameter sigma_', min_value=0.01, max_value=1.0, value=0.3, step=0.01)
-t, paths_b = generate_multiple_paths(k_, m_, sigma_, S0, r, T, N, num_paths, wiener_increments_all_paths)
+t, paths_b = generate_multiple_paths(k_, m_, sigma_, S0, r, T, N, num_paths, wiener_increments_all_paths,True)
 df_paths_b = pd.DataFrame(paths_b).T
 df_paths_b.index = t
 df_paths_b_long = df_paths_b.reset_index().melt('index', var_name='path', value_name='price')
@@ -128,5 +130,5 @@ chart_b = alt.Chart(df_paths_b_long).mark_line().encode(
     y=alt.Y('price:Q', title='Stock Price', scale=alt.Scale(domain=[50, 300])),
     color='path:N',
     tooltip=['index', 'price']
-).interactive(bind_y =True).properties(width=600, height=500)  # Increased width for better visibility
+).properties(width=600, height=500)  # Increased width for better visibility
 st.altair_chart(chart_b, use_container_width=True)
