@@ -1,1 +1,5 @@
 matplotlib==3.4.2
+numpy
+seaborn
+pandas
+altair
