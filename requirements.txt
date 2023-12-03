@@ -3,4 +3,4 @@ numpy
 seaborn
 pandas
 altair
-py_vollib_vectorized
+scipy
