@@ -55,6 +55,7 @@ def generate_multiple_paths(k, m, sigma, S0, r, T, N, num_paths, wiener_incremen
 
     return t, paths #paths_b
 
+
 # Set random seed for reproducibility
 np.random.seed(42)
 
@@ -67,13 +68,13 @@ st.markdown("""
 
 Mean-Reversion folyamat:
                         
-$$ dS(t) = k(m-S(t)dt+\sigma S(t)dW(t) $$
+$$ dS(t) = k(m-S(t)dt+\\sigma S(t)dW(t) $$
 """)
 
 # Slider for the mean-reversion parameter k
 k = st.slider('Mean-reversion intenzitás: k', min_value=0.01, max_value=10.0, value=1.5, step=0.01)
 m = st.slider('Mean-reversion középérték: m', min_value=0.01, max_value=200.0, value=100.0, step=0.01)
-sigma = st.slider('Volatilitás: sigma', min_value=0.01, max_value=1.0, value=0.3, step=0.01)
+sigma = st.slider('Volatilitás: sigma   ', min_value=0.01, max_value=0.4, value=0.3, step=0.01)
 
 # m and sigma are kept constant for this example
 # m = 100
@@ -113,7 +114,7 @@ chart_a = alt.Chart(df_paths_a_long).mark_line().encode(
 st.altair_chart(chart_a, use_container_width=True)
 
 
-num_paths_density=10000
+num_paths_density=3000
 
 # Generate Wiener increments
 wiener_increments_all_paths_density = np.random.normal(0, np.sqrt(T/N), (num_paths_density, N))
@@ -128,48 +129,51 @@ final_prices_a = [path[-1] for path in paths_a_density]
 df = pd.DataFrame({'Final Price': final_prices_a})
 
 # Create the density plot using Altair
-chart = alt.Chart(df).transform_density(
+chart_a_density = alt.Chart(df, ).transform_density(
     'Final Price',
     as_=['Final Price', 'Density'],
+    
 ).mark_area().encode(
-    x='Final Price:Q',
-    y='Density:Q',
-)
+    x=alt.X('Final Price:Q', scale=alt.Scale(domain=[0, 500])),
+    y=alt.Y('Density:Q', scale=alt.Scale(domain=[0, 0.05])),
+    # y='Density:Q',
+).properties(width=600, height=400)
 
 # Display the chart
-chart
+st.altair_chart(chart_a_density, use_container_width=True)
+
 
 
 st.markdown("""
-            
 Kockázatmentes trajektóriák:
-$dS(t) = k(m-S(t))dt+\sigma S(t)dW(t)$
-\\
-\\
+            
+$dS(t) = k(m-S(t))dt+\\sigma S(t)dW(t)$
+
+
 $dD(t)=-rD(t)dt$
-\\
-\\
+
+
 $X(t)=D(t)S(t)$
-\\
-\\
-$dX(t)=D(t)dS(t)+S(t)dD(t)=D(t\left[k(m-S(t))dt+\sigma S(t)dW(t)\right]-rS(t)D(t)dt$
-\\
-\\
-$=\sigma D(t)S(t)\underbrace{\left[dW(t)+\frac{k(m-S(t))-rS(t)}{\sigma S(t)}dt\right]}_{\tilde{W}(t)} $
-\\
-\\
-$dS(t) = k(m-S(t))dt+\sigma S(t)dW(t)=$
-\\
-\\
-$k(m-S(t))dt+\sigma S(t)d\tilde{W}(t)-\left[k(m-S(t))-rS(t)\right]dt=$
-\\
-\\
-$rS(t)dt+\sigma S(t)d\tilde{W}(t)$
+
+
+$dX(t)=D(t)dS(t)+S(t)dD(t)=D(t\\left[k(m-S(t))dt+\\sigma S(t)dW(t)\\right]-rS(t)D(t)dt$
+
+
+$=\\sigma D(t)S(t)\\underbrace{\\left[dW(t)+\\frac{k(m-S(t))-rS(t)}{\\sigma S(t)}dt\\right]}_{\\tilde{W}(t)} $
+
+
+$dS(t) = k(m-S(t))dt+\\sigma S(t)dW(t)=$
+
+
+$k(m-S(t))dt+\\sigma S(t)d\\tilde{W}(t)-\\left[k(m-S(t))-rS(t)\\right]dt=$
+
+
+$rS(t)dt+\\sigma S(t)d\\tilde{W}(t)$
 """)
 
 k_ = st.slider('Mean-reversion intenzitás: k (nem függ tőle)', min_value=0.01, max_value=10.0, value=1.5, step=0.01)
 m_ = st.slider('Mean-reversion középérték: m (nem függ tőle)', min_value=0.01, max_value=200.0, value=100.0, step=0.01)
-sigma_ = st.slider('Volatilitás sigma', min_value=0.01, max_value=1.0, value=0.3, step=0.01)
+sigma_ = st.slider('Volatilitás: sigma', min_value=0.01, max_value=0.4, value=0.3, step=0.01)
 t, paths_b = generate_multiple_paths(k_, m_, sigma_, S0, r, T, N, num_paths, wiener_increments_all_paths,True)
 df_paths_b = pd.DataFrame(paths_b).T
 df_paths_b.index = t
@@ -185,22 +189,23 @@ chart_b = alt.Chart(df_paths_b_long).mark_line().encode(
 st.altair_chart(chart_b, use_container_width=True)
 
 # Generate multiple stock price paths
-t, paths_b_density = generate_multiple_paths(k, m, sigma, S0, r, T, N, num_paths_density, wiener_increments_all_paths_density)
+t, paths_b_density = generate_multiple_paths(k_, m_, sigma_, S0, r, T, N, num_paths_density, wiener_increments_all_paths_density,True)
 
 # Collect the stock prices at T=1 from each path
 final_prices_b = [path[-1] for path in paths_b_density]
 
 # Create a DataFrame
-df = pd.DataFrame({'Final Price': final_prices_b})
+df_b = pd.DataFrame({'Final Price': final_prices_b})
 
 # Create the density plot using Altair
-chart = alt.Chart(df).transform_density(
+chart_b_density = alt.Chart(df_b).transform_density(
     'Final Price',
     as_=['Final Price', 'Density'],
 ).mark_area().encode(
-    x='Final Price:Q',
-    y='Density:Q',
-)
+    x=alt.X('Final Price:Q', scale=alt.Scale(domain=[0, 500])),
+    y=alt.Y('Density:Q', scale=alt.Scale(domain=[0, 0.05])),
+).properties(width=600, height=400)
+st.altair_chart(chart_b_density, use_container_width=True)
 
 # Display the chart
-chart
+# chart_b_density
