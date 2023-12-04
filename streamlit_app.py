@@ -147,7 +147,7 @@ st.altair_chart(chart_a_density, use_container_width=True)
 
 
 st.markdown("""
-Kockázatmentes trajektóriák:
+Kockázatsemleges trajektóriák:
             
 $dS(t) = \\underbrace{k(m-S(t))}_{\\alpha(t)}dt+\\underbrace{\\sigma S(t)}_{\\sigma(t)}dW(t)$
 
@@ -190,7 +190,7 @@ chart_b = alt.Chart(df_paths_b_long).mark_line().encode(
 ).properties(
     width=600,
     height=500,
-    title='Kockázatmentes trajektóriák'
+    title='Kockázatsemleges trajektóriák'
 )  # Increased width for better visibility
 st.altair_chart(chart_b, use_container_width=True)
 
