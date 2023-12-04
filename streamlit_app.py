@@ -6,11 +6,7 @@ import pandas as pd
 import altair as alt
 from scipy.stats import norm
 
-# Model parameters
-S0 = 100  # initial stock price
-r = 0.05  # risk-free rate
-T = 1.0   # time horizon in years
-N = 252   # number of time steps (trading days in a year)
+T = 1.0   # time horizon in years   # number of time steps (trading days in a year)
 
 # Functions to simulate stock price paths using fixed Wiener increments
 def simulate_stock_path_fixed_wiener(k, m, sigma, S0, wiener_increments, T, N):
@@ -62,13 +58,15 @@ np.random.seed(42)
 # Streamlit app
 st.title('Mean-Reversion Simulation')
 
-N = st.number_input('Időfelbontás', min_value=10, max_value=1000, value=252, step=1)
+S0 = st.number_input('Kezdeti részvényár: S(0)', min_value=60, max_value=200, value=100, step=1)
+r = st.number_input('Kockázatmentes kamatláb: r', min_value=0.0, max_value=0.2, value=0.05, step=0.01)
+N = st.number_input('Időfelbontás: N', min_value=10, max_value=1000, value=250, step=1)
 
 st.markdown("""
 
 Mean-Reversion folyamat:
                         
-$$ dS(t) = k(m-S(t)dt+\\sigma S(t)dW(t) $$
+$$ \\boxed{dS(t) = k(m-S(t))dt+\\sigma S(t)dW(t)} $$
 """)
 
 # Slider for the mean-reversion parameter k
@@ -76,9 +74,6 @@ k = st.slider('Mean-reversion intenzitás: k', min_value=0.01, max_value=10.0, v
 m = st.slider('Mean-reversion középérték: m', min_value=0.01, max_value=200.0, value=100.0, step=0.01)
 sigma = st.slider('Volatilitás: sigma   ', min_value=0.01, max_value=0.8, value=0.3, step=0.01)
 
-# m and sigma are kept constant for this example
-# m = 100
-# sigma = 0.3
 
 # Number of paths per parameter set
 num_paths = 10
@@ -101,13 +96,17 @@ df_paths_a.index = t
 df_paths_a_long = df_paths_a.reset_index().melt('index', var_name='path', value_name='price')
 # df_paths_b_long = df_paths_b.reset_index().melt('index', var_name='path', value_name='price')
 
-# Create Altair line chart for (a) part
 chart_a = alt.Chart(df_paths_a_long).mark_line().encode(
     x=alt.X('index:T', title='Time'),
     y=alt.Y('price:Q', title='Stock Price', scale=alt.Scale(domain=[50, 300])),
     color='path:N',
     tooltip=['index', 'price']
-).properties(width=600, height=500)  # Increased width for better visibility
+).properties(
+    width=600,
+    height=500,
+    title='Mean-reversion trajektóriák'
+)
+
 
 
 # Use container width to make charts larger and more readable
@@ -137,7 +136,10 @@ chart_a_density = alt.Chart(df, ).transform_density(
     x=alt.X('Final Price:Q', scale=alt.Scale(domain=[0, 500])),
     y=alt.Y('Density:Q', scale=alt.Scale(domain=[0, 0.05])),
     # y='Density:Q',
-).properties(width=600, height=400)
+).properties(width=600, 
+             height=400,
+             title='Sűrűség t=1-ben'
+)
 
 # Display the chart
 st.altair_chart(chart_a_density, use_container_width=True)
@@ -147,7 +149,7 @@ st.altair_chart(chart_a_density, use_container_width=True)
 st.markdown("""
 Kockázatmentes trajektóriák:
             
-$dS(t) = k(m-S(t))dt+\\sigma S(t)dW(t)$
+$dS(t) = \\underbrace{k(m-S(t))}_{\\alpha(t)}dt+\\underbrace{\\sigma S(t)}_{\\sigma(t)}dW(t)$
 
 
 $dD(t)=-rD(t)dt$
@@ -165,10 +167,10 @@ $=\\sigma D(t)S(t)\\underbrace{\\left[dW(t)+\\frac{k(m-S(t))-rS(t)}{\\sigma S(t)
 $dS(t) = k(m-S(t))dt+\\sigma S(t)dW(t)=$
 
 
-$k(m-S(t))dt+\\sigma S(t)d\\tilde{W}(t)-\\left[k(m-S(t))-rS(t)\\right]dt=$
+$k(m-S(t))dt+\\sigma S(t)d\\tilde{W}(t)-\\left[k(m-S(t))-rS(t)\\right]dt \\implies$
 
 
-$rS(t)dt+\\sigma S(t)d\\tilde{W}(t)$
+$\\boxed{dS(t) = rS(t)dt+\\sigma S(t)d\\tilde{W}(t)}$
 """)
 
 k_ = st.slider('Mean-reversion intenzitás: k (nem függ tőle)', min_value=0.01, max_value=10.0, value=1.5, step=0.01)
@@ -185,7 +187,11 @@ chart_b = alt.Chart(df_paths_b_long).mark_line().encode(
     y=alt.Y('price:Q', title='Stock Price', scale=alt.Scale(domain=[50, 300])),
     color='path:N',
     tooltip=['index', 'price']
-).properties(width=600, height=500)  # Increased width for better visibility
+).properties(
+    width=600,
+    height=500,
+    title='Kockázatmentes trajektóriák'
+)  # Increased width for better visibility
 st.altair_chart(chart_b, use_container_width=True)
 
 # Generate multiple stock price paths
@@ -204,7 +210,10 @@ chart_b_density = alt.Chart(df_b).transform_density(
 ).mark_area().encode(
     x=alt.X('Final Price:Q', scale=alt.Scale(domain=[0, 500])),
     y=alt.Y('Density:Q', scale=alt.Scale(domain=[0, 0.05])),
-).properties(width=600, height=400)
+).properties(width=600, 
+             height=400,
+             title='Sűrűség t=1-ben'
+)
 st.altair_chart(chart_b_density, use_container_width=True)
 
 # Display the chart
@@ -258,7 +267,10 @@ data = pd.DataFrame({
     'Implied Volatility': call_ivs
 })
 c = alt.Chart(data).mark_line().encode(
-    x=alt.X('Strike Price', scale=alt.Scale(domain=[50, 200])),
+    x=alt.X('Strike Price', scale=alt.Scale(domain=[S0-50, S0+100])),
     y=alt.Y('Implied Volatility', scale=alt.Scale(domain=[0.0, 1.0])),
-).properties(width=600, height=400)
+).properties(width=600, 
+             height=400,
+             title='Visszaszámított volatilitás'
+)
 st.altair_chart(c, use_container_width=True)
