@@ -161,7 +161,7 @@ $X(t)=D(t)S(t)$
 $dX(t)=D(t)dS(t)+S(t)dD(t)=D(t\\left[k(m-S(t))dt+\\sigma S(t)dW(t)\\right]-rS(t)D(t)dt$
 
 
-$=\\sigma D(t)S(t)\\underbrace{\\left[dW(t)+\\frac{k(m-S(t))-rS(t)}{\\sigma S(t)}dt\\right]}_{\\tilde{W}(t)} $
+$=\\sigma D(t)S(t)\\underbrace{\\left[dW(t)+\\frac{k(m-S(t))-rS(t)}{\\sigma S(t)}dt\\right]}_{d\\tilde{W}(t)} $
 
 
 $dS(t) = k(m-S(t))dt+\\sigma S(t)dW(t)=$
