@@ -112,8 +112,7 @@ chart_a = alt.Chart(df_paths_a_long).mark_line().encode(
 # Use container width to make charts larger and more readable
 st.altair_chart(chart_a, use_container_width=True)
 
-
-num_paths_density=3000
+num_paths_density= st.number_input('Sűrűség számolásához trajektóriák száma:', min_value=100, max_value=5000, value=3000, step=1)
 
 # Generate Wiener increments
 wiener_increments_all_paths_density = np.random.normal(0, np.sqrt(T/N), (num_paths_density, N))
